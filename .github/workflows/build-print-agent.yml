@@ -1,0 +1,60 @@
+name: Build DT Print Agent
+
+# Runs on GitHub's hosted Windows runner — no Windows machine of your own
+# needed. Trigger manually, or automatically whenever this folder changes
+# on main.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "dt-print-agent/**"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: dt-print-agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build exe
+        run: pyinstaller --noconfirm --clean build\dt_print_agent.spec
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Copy setup guide into build folder (optional)
+        run: |
+          if (Test-Path "dt-print-agent-setup-guide.pdf") {
+            Copy-Item "dt-print-agent-setup-guide.pdf" "build\dt-print-agent-setup-guide.pdf"
+          }
+        shell: pwsh
+
+      - name: Build installer
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" build\installer.iss'
+        shell: pwsh
+
+      # Uploaded as a build artifact you can grab from the Actions run page.
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dt-print-agent-setup
+          path: dt-print-agent/build/output/dt-print-agent-setup.exe
+
+      # Optional: also attach it to a GitHub Release so your VPS can pull it
+      # with a stable URL via `curl -L` instead of downloading the artifact
+      # by hand each time. Only runs when you push a tag like v1.0.0.
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dt-print-agent/build/output/dt-print-agent-setup.exe
