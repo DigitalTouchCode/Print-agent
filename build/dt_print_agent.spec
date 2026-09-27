@@ -1,13 +1,16 @@
 # Build with:  pyinstaller build\dt_print_agent.spec
-# Run from the project root (the folder containing agent\ and assets\).
-import sys
+# Can be run from anywhere — root is derived from this spec file's own
+# location (build\..), not the invoking shell's CWD. PyInstaller chdirs to
+# the spec file's folder before exec'ing it, so a bare Path(".") here would
+# silently resolve to build\ instead of the project root; SPECPATH is the
+# global PyInstaller injects for exactly this reason.
 from pathlib import Path
 
 block_cipher = None
-root = Path(".").resolve()
+root = Path(SPECPATH).resolve().parent
 
 a = Analysis(
-    ["run_agent.py"],
+    [str(root / "run_agent.py")],
     pathex=[str(root)],
     binaries=[],
     datas=[(str(root / "assets" / "dt_icon.ico"), "assets")],
