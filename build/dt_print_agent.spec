@@ -27,8 +27,11 @@ a = Analysis(
 
 # `libusb` ships its DLL as package data — collect it explicitly so the
 # frozen exe can find libusb-1.0.dll without the user installing anything.
+# collect_dynamic_libs() returns (dest, src) 2-tuples; a.binaries is already
+# a normalized TOC of (dest, src, typecode) 3-tuples, so the typecode has
+# to be added by hand here rather than concatenating the raw list.
 from PyInstaller.utils.hooks import collect_dynamic_libs
-a.binaries += collect_dynamic_libs("libusb")
+a.binaries += [(dest, src, "BINARY") for dest, src in collect_dynamic_libs("libusb")]
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
