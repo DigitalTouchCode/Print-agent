@@ -1,21 +1,21 @@
 name: Build DT Print Agent
 
 # Runs on GitHub's hosted Windows runner — no Windows machine of your own
-# needed. Trigger manually, or automatically whenever this folder changes
-# on main.
+# needed. Trigger manually, or automatically on pushes to main.
+#
+# Assumes this repo's ROOT is the project itself — i.e. agent/, build/,
+# requirements.txt, run_agent.py live directly at the top level, not inside
+# a dt-print-agent/ subfolder. If your repo does nest everything under a
+# subfolder, add `defaults: { run: { working-directory: <that-folder> } }`
+# back in and prefix the artifact/upload paths with it.
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "dt-print-agent/**"
 
 jobs:
   build:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: dt-print-agent
     steps:
       - uses: actions/checkout@v4
 
@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dt-print-agent-setup
-          path: dt-print-agent/build/output/dt-print-agent-setup.exe
+          path: build/output/dt-print-agent-setup.exe
 
       # Optional: also attach it to a GitHub Release so your VPS can pull it
       # with a stable URL via `curl -L` instead of downloading the artifact
@@ -57,4 +57,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dt-print-agent/build/output/dt-print-agent-setup.exe
+          files: build/output/dt-print-agent-setup.exe
