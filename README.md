@@ -1,8 +1,8 @@
 # DT Print Agent
 
-A small Windows tray app that lets **DigitalTouch POS** print to a USB thermal
+A small Windows tray app that print to a USB thermal
 receipt printer directly, without relying on the browser's WebUSB permission
-model (which was hitting `Access denied` when Windows or Linux already had a
+model (which hits hitting `Access denied` when Windows or Linux already had a
 driver bound to the printer's USB interface).
 
 The agent runs a tiny local HTTP server on `127.0.0.1:9153`. The POS page
